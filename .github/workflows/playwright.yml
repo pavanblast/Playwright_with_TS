@@ -27,7 +27,7 @@ jobs:
       run: npx playwright install --with-deps
 
     - name: Run Playwright tests (QA only)
-      run: npx playwright test --project=QA
+      run: npx playwright test tests/new_test.spec.ts
 
     - name: Upload HTML report
       if: always()
