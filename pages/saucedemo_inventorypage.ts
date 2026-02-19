@@ -22,14 +22,14 @@ class SauceDemoInventoryPage {
     this.logoutLink = page.locator('[data-test="logout-sidebar-link"]');
   }
 
-  async isInventoryPageDisplayed() {
-    try {
-      await this.productList.waitFor({ state: 'visible', timeout: 5000 });
-      return true;
-    } catch {
-      return false;
-    }
-  }
+  // async isInventoryPageDisplayed() {
+  //   try {
+  //     await this.productList.waitFor({ state: 'visible', timeout: 5000 });
+  //     return true;
+  //   } catch {
+  //     return false;
+  //   }
+  // }
 
   async getProductByName(productName:string) {
     // Use exact text match for more reliable finding
