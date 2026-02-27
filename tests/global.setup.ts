@@ -1,56 +1,81 @@
 import { chromium, FullConfig } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'node:path';
+import fs from 'node:fs';
 import { LoginPage } from '../pages/loginpage';
 
 async function globalSetup(config: FullConfig) {
 
-  // get project from CLI
-  const cliArgs = process.argv.join(' ');
-  console.log("CLI:", cliArgs);
+  console.log("🔥 GLOBAL SETUP STARTED");
 
-  let projectsToRun = config.projects;
+  
+  const cli = process.argv.join(' ').toLowerCase();
 
-  // if specific project passed
-  if (cliArgs.includes('--project')) {
-    projectsToRun = config.projects.filter(p =>
-      cliArgs.toLowerCase().includes(p.name.toLowerCase())
+  let selectedProjects = config.projects;
+
+  if (cli.includes('--project')) {
+    selectedProjects = config.projects.filter(p =>
+      cli.includes(p.name.toLowerCase())
     );
   }
 
-  for (const project of projectsToRun) {
+  for (const project of selectedProjects) {
 
-    const projectName = project.name.toLowerCase();
+    const name = project.name.toLowerCase();
     let envFile = '';
 
-    if (projectName === 'qa') envFile = '.env.qa';
-    else if (projectName === 'non-prod') envFile = '.env.non-prod';
-    else if (projectName === 'prod') envFile = '.env.prod';
+    if (name === 'qa') envFile = '.env.qa';
+    else if (name === 'prod') envFile = '.env.prod';
+    else if (name === 'stage') envFile = '.env.stage';
 
-    console.log(`\n🌍 Setting up: ${projectName.toUpperCase()}`);
-    console.log(`📁 ENV: ${envFile}`);
+    console.log(`\n🌍 Running setup for: ${name}`);
 
+    const envPath = path.resolve(process.cwd(), envFile);
+
+    console.log("ENV PATH:", envPath);
+    console.log("ENV EXISTS:", fs.existsSync(envPath));
+
+    console.log("ENV FILE:", envFile);
+    console.log("BASE_URL:", process.env.BASE_URL);
+    console.log("USERNAME:", process.env.USERNAME);
+    console.log("PASSWORD:", process.env.PASSWORD);
+
+
+    // clear old env first
+    delete process.env.BASE_URL;
+    delete process.env.USERNAME;
+    delete process.env.PASSWORD;
+
+    // load env
     dotenv.config({
-      path: path.resolve(process.cwd(), envFile),
+      path: envPath,
       override: true,
     });
+
+    console.log("BASE_URL:", process.env.BASE_URL);
+    console.log("USERNAME:", process.env.USERNAME);
+
+    if (!process.env.BASE_URL || !process.env.USERNAME) {
+      console.log("❌ ENV NOT LOADED. Check .env location");
+      continue;
+    }
 
     const browser = await chromium.launch({ headless: false });
     const context = await browser.newContext();
     const page = await context.newPage();
 
     try {
-      const loginPage = new LoginPage(page);
-      await loginPage.login_with_valid_credentials();
+      const login = new LoginPage(page);
+      await login.login_with_valid_credentials();
 
       await context.storageState({
-        path: `state/${projectName}.json`,
+        path: `state/${name}.json`,
       });
 
-      console.log(`✅ Storage created for ${projectName}`);
+      console.log(`✅ Storage created: state/${name}.json`);
 
     } catch (err) {
-      console.error(`❌ Login failed for ${projectName}`, err);
+      console.log(`❌ Login failed for ${name}`, err);
     }
 
     await browser.close();

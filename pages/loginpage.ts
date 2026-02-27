@@ -12,8 +12,11 @@ class LoginPage {
   }
 
   async login_with_valid_credentials() {
-      await this.page.goto(SauceDemoData.BASE_URL);
-      expect(this.page.url()).toBe(SauceDemoData.BASE_URL);
+      await this.page.goto(process.env.BASE_URL);
+      console.log('Navigated to:', this.page.url());
+      expect(this.page.url()).toBe(process.env.BASE_URL);
+      console.log('username:', process.env.USERNAME);
+      console.log('password:', process.env.PASSWORD);
       expect(this.page.getByRole('textbox', { name: LOCATORS.USERNAME_INPUT })).toBeVisible();
       expect(this.page.getByRole('textbox', { name: LOCATORS.PASSWORD_INPUT })).toBeVisible();
       expect(this.page.getByRole('button', { name: LOCATORS.LOGIN_BUTTON })).toBeVisible();
@@ -29,7 +32,7 @@ class LoginPage {
 
   async login_with_invalid_username_password() {
       await this.page.goto(SauceDemoData.BASE_URL);
-      expect(this.page.url()).toBe(SauceDemoData.BASE_URL);
+      expect(this.page.url()).toBe(process.env.BASE_URL);
       expect(this.page.getByRole('textbox', { name: LOCATORS.USERNAME_INPUT })).toBeVisible();
       expect(this.page.getByRole('textbox', { name: LOCATORS.PASSWORD_INPUT })).toBeVisible();
       expect(this.page.getByRole('button', { name: LOCATORS.LOGIN_BUTTON })).toBeVisible();
